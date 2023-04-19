@@ -1,10 +1,15 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 
 public class Percolation {
     private static final int virtualSidesQuantity = 2;
 
     private final boolean[][] percolationGrid;
+    private final boolean[] openedSites;
     private final WeightedQuickUnionUF weightedQuickUnionUF;
 
     private final int firstVirtualSideIndex;
@@ -19,9 +24,9 @@ public class Percolation {
     }
 
     private void display2DArray() {
-        for (int i = 0; i < percolationGrid.length; i++) {
-            for (int j = 0; j < percolationGrid[i].length; j++) {
-                System.out.print(percolationGrid[i][j] + " ");
+        for (boolean[] booleans : percolationGrid) {
+            for (boolean aBoolean : booleans) {
+                System.out.print(aBoolean + " ");
             }
             System.out.println();
         }
@@ -42,7 +47,8 @@ public class Percolation {
         secondVirtualSideIndex = (percolationGridLength + virtualSidesQuantity) - 1;
 
         percolationGrid = new boolean[n][n];
-
+        openedSites = new boolean[percolationGridLength];
+        int index = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i == 0) {
@@ -51,8 +57,9 @@ public class Percolation {
                 if (i == (sideLength - 1)) {
                     weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(i, j));
                 }
-
+                openedSites[index] = false;
                 percolationGrid[i][j] = false;
+                index++;
             }
         }
     }
@@ -69,18 +76,10 @@ public class Percolation {
         }
         percolationGrid[row][col] = true;
         numberOfOpenedSites++;
-
 //        boolean isBottomOpened = isOpen(row - 1, col);
 //        boolean isTopOpened = isOpen(row + 1, col);
 //        boolean isLeftOpened = isOpen(row, col - 1);
 //        boolean isRightOpened = isOpen(row, col + 1);
-//
-//        if (!isBottomOpened) return;
-//        if (!isTopOpened) return;
-//        if (!isRightOpened) return;
-//        if (!isLeftOpened) return;
-//
-//        return { };
     }
 
     // is the site (row, col) open?

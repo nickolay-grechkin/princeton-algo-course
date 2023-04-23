@@ -1,6 +1,6 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -16,6 +16,10 @@ public class Percolation {
     private final int secondVirtualSideIndex;
     private final int percolationGridLength;
     private final int sideLength;
+    int rows;
+    int cols;
+    char[][] grid;
+    Set<String> visited = new HashSet<>();
 
     private int numberOfOpenedSites = 0;
     private int xyToId(int x, int y) {
@@ -76,10 +80,6 @@ public class Percolation {
         }
         percolationGrid[row][col] = true;
         numberOfOpenedSites++;
-//        boolean isBottomOpened = isOpen(row - 1, col);
-//        boolean isTopOpened = isOpen(row + 1, col);
-//        boolean isLeftOpened = isOpen(row, col - 1);
-//        boolean isRightOpened = isOpen(row, col + 1);
     }
 
     // is the site (row, col) open?
@@ -105,18 +105,72 @@ public class Percolation {
         return connected(firstVirtualSideIndex, secondVirtualSideIndex);
     }
 
+    public void bfs (int r, int c) {
+        Queue<String> q = new LinkedList<>();
+        q.add(r + "," + c);
+        visited.add(r + "," + c);
+
+        while (!q.isEmpty()) {
+            String[] qElement = q.remove().split(",");
+            int row = Integer.parseInt(qElement[0]);
+            int col = Integer.parseInt(qElement[1]);
+
+            int[][] directions = {{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }};
+
+            for (int dr = 0; dr < directions.length; dr++) {
+                for (int dc = 0; dc < directions[0].length; dc++) {
+                   r = row + directions[dr][0];
+                   c = col + directions[dr][1];
+
+                   if ((r >= 0 && r < rows) && (c >= 0 && c < cols) && grid[r][c] == '1' && !visited.contains(r + "," + c)) {
+                       q.add(r + "," + c);
+                       visited.add(r + "," + c);
+                   }
+                }
+            }
+        }
+    }
+
+    public int numberOfIslands(char[][] islandsGrid) {
+        grid = islandsGrid;
+
+        if (grid.length == 0) {
+            return 0;
+        }
+
+        rows = grid.length;
+        cols = grid[0].length;
+
+        int islands = 0;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (grid[r][c] == '1' && !visited.contains(r + "," + c)) {
+                    bfs(r, c);
+                    islands++;
+                }
+            }
+        }
+
+        return islands;
+    }
+
     public static void main(String[] args) {
         Percolation percolation = new Percolation(5);
-        percolation.open(0, 0);
-        percolation.open(1, 1);
-        percolation.open(2, 2);
-        percolation.open(3, 3);
-        percolation.open(4, 4);
-        percolation.weightedQuickUnionUF.union(percolation.xyToId(0, 0), percolation.xyToId(1, 1));
-        percolation.weightedQuickUnionUF.union(percolation.xyToId(1, 1), percolation.xyToId(2, 2));
-        percolation.weightedQuickUnionUF.union(percolation.xyToId(2, 2), percolation.xyToId(3, 3));
-        percolation.weightedQuickUnionUF.union(percolation.xyToId(3, 3), percolation.xyToId(4, 4));
-        System.out.println("Percolates: " + percolation.percolates());
-        System.out.println("Number of open sites: " + percolation.numberOfOpenedSites);
+//        percolation.open(0, 0);
+//        percolation.open(1, 1);
+//        percolation.open(2, 2);
+//        percolation.open(3, 3);
+//        percolation.open(4, 4);
+//        percolation.weightedQuickUnionUF.union(percolation.xyToId(0, 0), percolation.xyToId(1, 1));
+//        percolation.weightedQuickUnionUF.union(percolation.xyToId(1, 1), percolation.xyToId(2, 2));
+//        percolation.weightedQuickUnionUF.union(percolation.xyToId(2, 2), percolation.xyToId(3, 3));
+//        percolation.weightedQuickUnionUF.union(percolation.xyToId(3, 3), percolation.xyToId(4, 4));
+//        System.out.println("Percolates: " + percolation.percolates());
+//        System.out.println("Number of open sites: " + percolation.numberOfOpenedSites);
+        char[][] g = {{'1','1','0','0','0'}, {'1','1','0','0','0'}, {'0','0','1','0','0'}, {'0','0','0','1','1'}};
+        System.out.println(percolation.numberOfIslands(g));
+
+
     }
 }

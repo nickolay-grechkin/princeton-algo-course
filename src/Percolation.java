@@ -19,7 +19,6 @@ public class Percolation {
     int rows;
     int cols;
     char[][] grid;
-    Set<String> visited = new HashSet<>();
 
     private int numberOfOpenedSites = 0;
     private int xyToId(int x, int y) {
@@ -72,6 +71,33 @@ public class Percolation {
         return weightedQuickUnionUF.find(p) == weightedQuickUnionUF.find(q);
     }
 
+    public void bfs (int r, int c) {
+        Queue<String> q = new LinkedList<>();
+        Set<String> visited = new HashSet<>();
+        q.add(r + "," + c);
+        visited.add(r + "," + c);
+
+        while (!q.isEmpty()) {
+            String[] qElement = q.remove().split(",");
+            int row = Integer.parseInt(qElement[0]);
+            int col = Integer.parseInt(qElement[1]);
+
+            int[][] directions = {{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { -1, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }};
+
+            for (int[] direction : directions) {
+                r = row + direction[0];
+                c = col + direction[1];
+                System.out.println(r + " " + c);
+                if ((r >= 0 && r < sideLength) && (c >= 0 && c < sideLength) && percolationGrid[r][c] && !visited.contains(r + "," + c)) {
+                    q.add(r + "," + c);
+                    visited.add(r + "," + c);
+                    weightedQuickUnionUF.union(xyToId(row, col), xyToId(r, c));
+                }
+            }
+            System.out.println("-------------------------------------------------------------------------------------");
+        }
+    }
+
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
         validateIndices(row, col);
@@ -80,6 +106,7 @@ public class Percolation {
         }
         percolationGrid[row][col] = true;
         numberOfOpenedSites++;
+        bfs(row, col);
     }
 
     // is the site (row, col) open?
@@ -105,7 +132,7 @@ public class Percolation {
         return connected(firstVirtualSideIndex, secondVirtualSideIndex);
     }
 
-    public void bfs (int r, int c) {
+    /*public void bfs (int r, int c) {
         Queue<String> q = new LinkedList<>();
         q.add(r + "," + c);
         visited.add(r + "," + c);
@@ -153,24 +180,17 @@ public class Percolation {
         }
 
         return islands;
-    }
+    }*/
 
     public static void main(String[] args) {
         Percolation percolation = new Percolation(5);
-//        percolation.open(0, 0);
-//        percolation.open(1, 1);
-//        percolation.open(2, 2);
-//        percolation.open(3, 3);
-//        percolation.open(4, 4);
-//        percolation.weightedQuickUnionUF.union(percolation.xyToId(0, 0), percolation.xyToId(1, 1));
-//        percolation.weightedQuickUnionUF.union(percolation.xyToId(1, 1), percolation.xyToId(2, 2));
-//        percolation.weightedQuickUnionUF.union(percolation.xyToId(2, 2), percolation.xyToId(3, 3));
-//        percolation.weightedQuickUnionUF.union(percolation.xyToId(3, 3), percolation.xyToId(4, 4));
-//        System.out.println("Percolates: " + percolation.percolates());
-//        System.out.println("Number of open sites: " + percolation.numberOfOpenedSites);
-        char[][] g = {{'1','1','0','0','0'}, {'1','1','0','0','0'}, {'0','0','1','0','0'}, {'0','0','0','1','1'}};
-        System.out.println(percolation.numberOfIslands(g));
-
-
+        percolation.open(0, 0);
+        percolation.open(1, 1);
+        percolation.open(2, 2);
+        percolation.open(3, 3);
+        percolation.open(4, 4);
+        percolation.open(5, 5);
+        percolation.open(6, 6);
+        System.out.println(percolation.isFull(6, 6));
     }
 }

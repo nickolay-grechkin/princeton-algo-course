@@ -25,6 +25,10 @@ public class Percolation {
         secondVirtualSideIndex = (percolationGridLength + VIRTUAL_SIDES_QUANTITY) - 1;
 
         percolationGrid = new boolean[n][n];
+        for (int i = 0; i < n; i++) {
+            weightedQuickUnionUF.union(firstVirtualSideIndex, xyToId(0, i));
+            weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(sideLength - 1, i));
+        }
     }
 
     private int xyToId(int x, int y) {
@@ -63,49 +67,31 @@ public class Percolation {
         if (percolationGrid[row - 1][col - 1]) {
             return;
         }
-        if (!isConnected(firstVirtualSideIndex, xyToId(0, 0))) {
-            for (int i = 0; i < sideLength; i++) {
-                weightedQuickUnionUF.union(firstVirtualSideIndex, xyToId(0, i));
-                weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(sideLength - 1, i));
-            }
-        }
         percolationGrid[row - 1][col - 1] = true;
         numberOfOpenedSites++;
         bfs(row - 1, col - 1);
     }
 
-    // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
         validateIndices(row - 1, col - 1);
         return percolationGrid[row - 1][col - 1];
     }
 
-    // is the site (row, col) connected to the top row?
     public boolean isFull(int row, int col) {
         validateIndices(row - 1, col - 1);
         if (!isOpen(row, col)) return false;
         return isConnected(xyToId(row - 1, col - 1), firstVirtualSideIndex);
     }
 
-    // returns the number of open sites
     public int numberOfOpenSites() {
         return numberOfOpenedSites;
     }
 
-    // does the system percolate?
     public boolean percolates() {
         return isConnected(firstVirtualSideIndex, secondVirtualSideIndex);
     }
 
     public static void main(String[] args) {
         Percolation percolation = new Percolation(5);
-        percolation.open(0, 0);
-        percolation.open(1, 1);
-        percolation.open(2, 2);
-        percolation.open(3, 3);
-        percolation.open(4, 4);
-        percolation.open(5, 5);
-        percolation.open(6, 6);
-        System.out.println(percolation.isFull(6, 6));
     }
 }

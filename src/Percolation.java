@@ -1,112 +1,77 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.util.*;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-
 public class Percolation {
-    private static final int virtualSidesQuantity = 2;
+    private static final int VIRTUAL_SIDES_QUANTITY = 2;
 
     private final boolean[][] percolationGrid;
-    private final boolean[] openedSites;
     private final WeightedQuickUnionUF weightedQuickUnionUF;
 
     private final int firstVirtualSideIndex;
     private final int secondVirtualSideIndex;
-    private final int percolationGridLength;
     private final int sideLength;
-    int rows;
-    int cols;
-    char[][] grid;
 
     private int numberOfOpenedSites = 0;
+
+    public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        weightedQuickUnionUF = new WeightedQuickUnionUF((n * n) + VIRTUAL_SIDES_QUANTITY);
+        sideLength = n;
+        int percolationGridLength = sideLength * sideLength;
+
+        firstVirtualSideIndex = (percolationGridLength + (VIRTUAL_SIDES_QUANTITY - 1)) - 1;
+        secondVirtualSideIndex = (percolationGridLength + VIRTUAL_SIDES_QUANTITY) - 1;
+
+        percolationGrid = new boolean[n][n];
+    }
+
     private int xyToId(int x, int y) {
         validateIndices(x, y);
         return x * sideLength + y;
     }
 
-    private void display2DArray() {
-        for (boolean[] booleans : percolationGrid) {
-            for (boolean aBoolean : booleans) {
-                System.out.print(aBoolean + " ");
-            }
-            System.out.println();
-        }
-    }
-
     private void validateIndices(int x, int y) {
         if ((x < 0 || y < 0) || (x >= sideLength || y >= sideLength)) {
-            throw new ArrayIndexOutOfBoundsException();
+            throw new IllegalArgumentException();
         }
     }
 
-    public Percolation(int n) {
-        weightedQuickUnionUF = new WeightedQuickUnionUF((n * n) + virtualSidesQuantity);
-        sideLength = n;
-        percolationGridLength = sideLength * sideLength;
-
-        firstVirtualSideIndex = (percolationGridLength + (virtualSidesQuantity - 1)) - 1;
-        secondVirtualSideIndex = (percolationGridLength + virtualSidesQuantity) - 1;
-
-        percolationGrid = new boolean[n][n];
-        openedSites = new boolean[percolationGridLength];
-        int index = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == 0) {
-                    weightedQuickUnionUF.union(firstVirtualSideIndex, xyToId(i, j));
-                }
-                if (i == (sideLength - 1)) {
-                    weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(i, j));
-                }
-                openedSites[index] = false;
-                percolationGrid[i][j] = false;
-                index++;
-            }
-        }
-    }
-
-    public boolean connected(int p, int q) {
+    private boolean isConnected(int p, int q) {
         return weightedQuickUnionUF.find(p) == weightedQuickUnionUF.find(q);
     }
 
-    public void bfs (int r, int c) {
-        Queue<String> q = new LinkedList<>();
-        Set<String> visited = new HashSet<>();
-        q.add(r + "," + c);
-        visited.add(r + "," + c);
+    private void bfs (int r, int c) {
+            int row = r;
+            int col = c;
 
-        while (!q.isEmpty()) {
-            String[] qElement = q.remove().split(",");
-            int row = Integer.parseInt(qElement[0]);
-            int col = Integer.parseInt(qElement[1]);
-
-            int[][] directions = {{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { -1, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }};
+            int[][] directions = {{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }};
 
             for (int[] direction : directions) {
                 r = row + direction[0];
                 c = col + direction[1];
-                System.out.println(r + " " + c);
-                if ((r >= 0 && r < sideLength) && (c >= 0 && c < sideLength) && percolationGrid[r][c] && !visited.contains(r + "," + c)) {
-                    q.add(r + "," + c);
-                    visited.add(r + "," + c);
+                if ((r >= 0 && r < sideLength) && (c >= 0 && c < sideLength) && percolationGrid[r][c]) {
                     weightedQuickUnionUF.union(xyToId(row, col), xyToId(r, c));
                 }
             }
-            System.out.println("-------------------------------------------------------------------------------------");
-        }
     }
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-        validateIndices(row, col);
-        if (percolationGrid[row][col]) {
+        validateIndices(row - 1, col - 1);
+        if (percolationGrid[row - 1][col - 1]) {
             return;
         }
-        percolationGrid[row][col] = true;
+        if (!isConnected(firstVirtualSideIndex, xyToId(0, 0))) {
+            for (int i = 0; i < sideLength; i++) {
+                weightedQuickUnionUF.union(firstVirtualSideIndex, xyToId(0, i));
+                weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(sideLength - 1, i));
+            }
+        }
+        percolationGrid[row - 1][col - 1] = true;
         numberOfOpenedSites++;
-        bfs(row, col);
+        bfs(row - 1, col - 1);
     }
 
     // is the site (row, col) open?
@@ -119,7 +84,7 @@ public class Percolation {
     public boolean isFull(int row, int col) {
         validateIndices(row - 1, col - 1);
         if (!isOpen(row, col)) return false;
-        return connected(xyToId(row - 1, col - 1), firstVirtualSideIndex);
+        return isConnected(xyToId(row - 1, col - 1), firstVirtualSideIndex);
     }
 
     // returns the number of open sites
@@ -129,58 +94,8 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        return connected(firstVirtualSideIndex, secondVirtualSideIndex);
+        return isConnected(firstVirtualSideIndex, secondVirtualSideIndex);
     }
-
-    /*public void bfs (int r, int c) {
-        Queue<String> q = new LinkedList<>();
-        q.add(r + "," + c);
-        visited.add(r + "," + c);
-
-        while (!q.isEmpty()) {
-            String[] qElement = q.remove().split(",");
-            int row = Integer.parseInt(qElement[0]);
-            int col = Integer.parseInt(qElement[1]);
-
-            int[][] directions = {{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }};
-
-            for (int dr = 0; dr < directions.length; dr++) {
-                for (int dc = 0; dc < directions[0].length; dc++) {
-                   r = row + directions[dr][0];
-                   c = col + directions[dr][1];
-
-                   if ((r >= 0 && r < rows) && (c >= 0 && c < cols) && grid[r][c] == '1' && !visited.contains(r + "," + c)) {
-                       q.add(r + "," + c);
-                       visited.add(r + "," + c);
-                   }
-                }
-            }
-        }
-    }
-
-    public int numberOfIslands(char[][] islandsGrid) {
-        grid = islandsGrid;
-
-        if (grid.length == 0) {
-            return 0;
-        }
-
-        rows = grid.length;
-        cols = grid[0].length;
-
-        int islands = 0;
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (grid[r][c] == '1' && !visited.contains(r + "," + c)) {
-                    bfs(r, c);
-                    islands++;
-                }
-            }
-        }
-
-        return islands;
-    }*/
 
     public static void main(String[] args) {
         Percolation percolation = new Percolation(5);

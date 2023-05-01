@@ -6,7 +6,7 @@ public class InteractivePercolationVisualizer {
 
     public static void main(String[] args) {
         // n-by-n percolation system (read from command-line, default n = 10)
-        int n = 10;
+        int n = 3;
         if (args.length == 1) n = Integer.parseInt(args[0]);
 
         // turn on animation mode
@@ -37,9 +37,8 @@ public class InteractivePercolationVisualizer {
 //                    if (!percolation.isOpen(row, col)) {
 //                        StdOut.println(row + " " + col);
 //                    }
-                    percolation.open(row, col);
+                    percolation.open(row + 1, col + 1);
                 }
-
                 // draw n-by-n percolation system
                 PercolationVisualizer.draw(percolation, n);
             }

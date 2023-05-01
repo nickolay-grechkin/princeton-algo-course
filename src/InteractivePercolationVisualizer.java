@@ -39,6 +39,7 @@ public class InteractivePercolationVisualizer {
 //                    }
                     percolation.open(row + 1, col + 1);
                 }
+                System.out.println(percolation.isFull(row + 1, col + 1));
                 // draw n-by-n percolation system
                 PercolationVisualizer.draw(percolation, n);
             }

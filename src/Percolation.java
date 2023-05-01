@@ -4,7 +4,8 @@ public class Percolation {
     private static final int VIRTUAL_SIDES_QUANTITY = 2;
 
     private final boolean[][] percolationGrid;
-    private final WeightedQuickUnionUF weightedQuickUnionUF;
+    private final WeightedQuickUnionUF weightedQuickUnionWithOneVR;
+    private final WeightedQuickUnionUF weightedQuickUnionWithTwoVR;
 
     private final int firstVirtualSideIndex;
     private final int secondVirtualSideIndex;
@@ -17,17 +18,23 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
 
-        weightedQuickUnionUF = new WeightedQuickUnionUF((n * n) + VIRTUAL_SIDES_QUANTITY);
         sideLength = n;
+
         int percolationGridLength = sideLength * sideLength;
 
         firstVirtualSideIndex = (percolationGridLength + (VIRTUAL_SIDES_QUANTITY - 1)) - 1;
         secondVirtualSideIndex = (percolationGridLength + VIRTUAL_SIDES_QUANTITY) - 1;
 
+        weightedQuickUnionWithOneVR = new WeightedQuickUnionUF((percolationGridLength) + 1);
+        weightedQuickUnionWithTwoVR = new WeightedQuickUnionUF((percolationGridLength) + 2);
+
         percolationGrid = new boolean[n][n];
+
         for (int i = 0; i < n; i++) {
-            weightedQuickUnionUF.union(firstVirtualSideIndex, xyToId(0, i));
-            weightedQuickUnionUF.union(secondVirtualSideIndex, xyToId(sideLength - 1, i));
+            weightedQuickUnionWithOneVR.union(firstVirtualSideIndex, xyToId(0, i));
+
+            weightedQuickUnionWithTwoVR.union(firstVirtualSideIndex, xyToId(0, i));
+            weightedQuickUnionWithTwoVR.union(secondVirtualSideIndex, xyToId(sideLength - 1, i));
         }
     }
 
@@ -43,10 +50,10 @@ public class Percolation {
     }
 
     private boolean isConnected(int p, int q) {
-        return weightedQuickUnionUF.find(p) == weightedQuickUnionUF.find(q);
+        return weightedQuickUnionWithOneVR.find(p) == weightedQuickUnionWithOneVR.find(q);
     }
 
-    private void bfs (int r, int c) {
+    private void connectNeighboursNodes (int r, int c) {
             int row = r;
             int col = c;
 
@@ -56,7 +63,8 @@ public class Percolation {
                 r = row + direction[0];
                 c = col + direction[1];
                 if ((r >= 0 && r < sideLength) && (c >= 0 && c < sideLength) && percolationGrid[r][c]) {
-                    weightedQuickUnionUF.union(xyToId(row, col), xyToId(r, c));
+                    weightedQuickUnionWithOneVR.union(xyToId(row, col), xyToId(r, c));
+                    weightedQuickUnionWithTwoVR.union(xyToId(row, col), xyToId(r, c));
                 }
             }
     }
@@ -64,12 +72,14 @@ public class Percolation {
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
         validateIndices(row - 1, col - 1);
+
         if (percolationGrid[row - 1][col - 1]) {
             return;
         }
+
         percolationGrid[row - 1][col - 1] = true;
         numberOfOpenedSites++;
-        bfs(row - 1, col - 1);
+        connectNeighboursNodes(row - 1, col - 1);
     }
 
     public boolean isOpen(int row, int col) {
@@ -88,10 +98,11 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        return isConnected(firstVirtualSideIndex, secondVirtualSideIndex);
-    }
+        if (numberOfOpenedSites == 0 && sideLength == 1) {
+            return false;
+        }
 
-    public static void main(String[] args) {
-        Percolation percolation = new Percolation(5);
+        return weightedQuickUnionWithTwoVR.find(firstVirtualSideIndex) ==
+                    weightedQuickUnionWithTwoVR.find(secondVirtualSideIndex);
     }
 }

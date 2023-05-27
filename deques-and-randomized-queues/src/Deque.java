@@ -1,56 +1,62 @@
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static javax.swing.text.html.HTML.Attribute.N;
 
 public class Deque<Item> implements Iterable<Item> {
     private Node head;
     private Node tail;
-    private Node oldTail;
     private int size = 0;
 
     private class Node {
         Item item;
         Node next;
+
+        public Node(Item item, Node next) {
+            this.item = item;
+            this.next = next;
+        }
     }
 
-    // construct an empty deque
     public Deque() {
         head = null;
         tail = null;
     }
 
-    // is the deque empty?
     public boolean isEmpty() {
         return size() == 0;
     }
 
-    // return the number of items on the deque
     public int size() {
         return size;
     }
 
-    // add the item to the front
     public void addFirst(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+
         Node oldFirst = head;
-        head = new Node();
-        head.item = item;
-        head.next = oldFirst;
-        tail = oldFirst;
+        head = new Node(item, oldFirst);
+
+        if (tail == null) {
+            tail = head;
+        }
+
         size++;
     }
 
-    // add the item to the back
     public void addLast(Item item) {
-        Node newNode = new Node();
-        newNode.item = item;
-        newNode.next = null;
-        if (tail == null) {
-            tail = newNode;
-        } else {
-            tail.next = newNode;
+        if (item == null) {
+            throw new IllegalArgumentException();
         }
 
-        oldTail = tail;
+        Node newNode = new Node(item, null);
+
+        if (tail != null) {
+            tail.next = newNode;
+        }
+        tail = newNode;
 
         if (head == null) {
             head = newNode;
@@ -59,48 +65,78 @@ public class Deque<Item> implements Iterable<Item> {
         size++;
     }
 
-    // remove and return the item from the front
     public Item removeFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
         Item item = head.item;
         head = head.next;
+
+        if (head == null) {
+            tail = null;
+        }
+
+        size--;
+
         return item;
     }
 
-    // remove and return the item from the back
     public Item removeLast() {
-        Item item = tail.item;
-        oldTail.next = null;
-        tail = oldTail;
-        return item;
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        Item removedItem = tail.item;
+
+        if (size == 1) {
+            tail = null;
+            head = null;
+        } else {
+            Node pointer = head;
+            for (int i = 0; i < size - 2; i++) {
+                pointer = pointer.next;
+            }
+            pointer.next = null;
+            tail = pointer;
+        }
+
+        size--;
+
+        return removedItem;
     }
 
     private class ListIterator implements Iterator<Item>
     {
         private Node current = head;
         public boolean hasNext() { return current != null; }
-        public void remove() { /* not supported */ }
+        public void remove() { throw new UnsupportedOperationException(); }
         public Item next()
         {
+            if (head == null) {
+                throw new NoSuchElementException();
+            }
+
             Item item = current.item;
             current = current.next;
             return item;
         }
     }
 
-    // return an iterator over items in order from front to back
     public Iterator<Item> iterator() {
         return new ListIterator();
     }
 
-    // unit testing (required)
     public static void main(String[] args) {
         Deque<String> deque = new Deque<>();
-        deque.addLast("F");
-        deque.addLast("S");
-        deque.addFirst("T");
-        deque.addFirst("G");
+        deque.addFirst("First");
+        deque.addFirst("Second");
+        deque.addFirst("Third");
+        deque.addFirst("Fourth");
+        deque.removeFirst();
+        deque.removeFirst();
         deque.removeLast();
-        deque.removeLast();
+        deque.removeFirst();
         Iterator<String> dequeIterator = deque.iterator();
 
         while(dequeIterator.hasNext()) {

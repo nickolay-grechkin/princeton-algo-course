@@ -1,8 +1,6 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static javax.swing.text.html.HTML.Attribute.N;
-
 public class Deque<Item> implements Iterable<Item> {
     private Node head;
     private Node tail;
@@ -128,21 +126,12 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public static void main(String[] args) {
-        Deque<String> deque = new Deque<>();
-        deque.addFirst("First");
-        deque.addFirst("Second");
-        deque.addFirst("Third");
-        deque.addFirst("Fourth");
+        Deque<Integer> deque = new Deque<>();
+        deque.addFirst(1);
+        deque.addFirst(2);
         deque.removeFirst();
-        deque.removeFirst();
-        deque.removeLast();
-        deque.removeFirst();
-        Iterator<String> dequeIterator = deque.iterator();
-
-        while(dequeIterator.hasNext()) {
-            String s = dequeIterator.next();
-            System.out.println(s);
-        }
+        deque.addFirst(4);
+        System.out.println(deque.iterator());
     }
 }
 

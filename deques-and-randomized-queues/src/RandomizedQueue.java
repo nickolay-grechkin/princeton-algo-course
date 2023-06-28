@@ -1,12 +1,11 @@
 import edu.princeton.cs.algs4.StdRandom;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
-    Item[] queue;
-    int head = 0;
+    private Item[] queue;
+    private int head = 0;
 
     public RandomizedQueue() {
         queue = (Item[]) new Object[1];
@@ -24,18 +23,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     public int size() {
-        return head + 1;
+        return head;
     }
 
     private int getRandomIndex() {
-        int to;
-        if (size() - 1 == 0) {
-            to = 1;
-        } else {
-            to = size() - 1;
-        }
-
-        return StdRandom.uniformInt(0, to);
+        return StdRandom.uniformInt(head);
     }
 
     public void enqueue(Item item) {
@@ -56,9 +48,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         int index = getRandomIndex();
-
         Item item = queue[index];
-        queue[index] = null;
+
+        if (size() == 1 || index == size() - 1) {
+            queue[index] = null;
+        } else {
+            queue[index] = queue[size() - 1];
+            queue[size() - 1] = null;
+        }
         head--;
 
         if (head > 0 && head == size() / 4) {
@@ -101,23 +98,15 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     public static void main(String[] args) {
-        RandomizedQueue<String> queue = new RandomizedQueue<>();
-        queue.enqueue("1");
-        queue.enqueue("2");
-        queue.enqueue("3");
-        queue.enqueue("4");
-        queue.enqueue("5");
-        queue.enqueue("6");
-        queue.enqueue("7");
-        queue.enqueue("8");
+        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
+        queue.enqueue(14);
+        queue.dequeue();
+        queue.enqueue(47);
+        queue.enqueue(37);
+        queue.enqueue(20);
         queue.dequeue();
         queue.dequeue();
         queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-
-        System.out.println(Arrays.toString(queue.queue));
     }
 
 }
